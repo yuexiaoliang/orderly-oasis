@@ -27,9 +27,14 @@ export function addPinyin<T extends Record<string, any>>(obj: T) {
   const name = obj.name
 
   // 拼音
-  const py = pinyin(name, { type: 'string', toneType: 'none' })
+  const py = pinyin(name, { type: 'string', toneType: 'none', separator: '' })
   // 首字母
-  const first = pinyin(name, { pattern: 'first', nonZh: 'consecutive', type: 'string' })
+  const first = pinyin(name, {
+    pattern: 'first',
+    nonZh: 'consecutive',
+    type: 'string',
+    separator: ''
+  })
 
   const _py = [py, first]
 
