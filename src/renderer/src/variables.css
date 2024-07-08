@@ -1,0 +1,6 @@
+:root {
+  --header-height: 34px;
+  --footer-height: 34px;
+  --main-padding: 14px;
+  --main-bg-color: var(--el-bg-color);
+}
