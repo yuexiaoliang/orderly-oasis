@@ -64,6 +64,11 @@ function createWindow(): void {
     if (url.startsWith('https:')) shell.openExternal(url)
     return { action: 'deny' }
   })
+
+  // 阻止 Ctrl+W 关闭窗口
+  win.on('close', (e) => {
+    e.preventDefault()
+  })
 }
 
 // 托盘菜单
@@ -79,7 +84,7 @@ function createTray() {
     {
       label: '退出',
       click: () => {
-        win?.close()
+        win?.destroy()
       }
     }
   ])
