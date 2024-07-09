@@ -1,29 +1,13 @@
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia'
-import { TableProps } from 'element-plus'
-import { Select, Finished } from '@element-plus/icons-vue'
 
-import { open } from '@/utils'
 import { useReqMgmtStore } from '@/stores/req-mgmt'
 import { reqMgmt } from '@/constants'
+import Opener from './Opener.vue'
+import Table from './ReqMgmtListTable.vue'
 
 const reqMgmtStore = useReqMgmtStore()
-const { done } = reqMgmtStore
 const { pinyinGroupedList, pinyinGroupedSortedKeys } = storeToRefs(reqMgmtStore)
-
-const load: TableProps<ProjectItem>['load'] = async (item, _, resolve) => {
-  const _children = await window.electron.ipcRenderer.invoke('readdir-children', item.path)
-
-  const children = _children.map((child) => {
-    return {
-      ...child,
-      finished: item.finished
-    }
-  })
-
-  item.children = children
-  resolve(children)
-}
 </script>
 
 <template>
@@ -40,24 +24,11 @@ const load: TableProps<ProjectItem>['load'] = async (item, _, resolve) => {
               </template>
 
               <div v-for="child in pinyinGroupedList[key]" :id="child.id" class="todo-project">
-                <div class="todo-project__title">{{ child.name }}</div>
+                <Opener class="todo-project__title" :path="child.path" is-folder>
+                  {{ child.name }}
+                </Opener>
 
-                <div class="todo-project__list">
-                  <div v-for="row in child.requirements" class="todo-project__list__item">
-                    <el-link
-                      :underline="false"
-                      :type="row.finished ? 'info' : 'warning'"
-                      :title="row.path"
-                      @click="open(row.path)"
-                    >
-                      {{ row.name }}
-                    </el-link>
-
-                    <el-icon color="#409efc" class="handle-icon" @click="done(row)">
-                      <Select />
-                    </el-icon>
-                  </div>
-                </div>
+                <Table :data="child.requirements" />
               </div>
             </el-card>
           </div>
@@ -71,50 +42,12 @@ const load: TableProps<ProjectItem>['load'] = async (item, _, resolve) => {
                   <h3 class="project__header__title">{{ child.name }}</h3>
 
                   <div class="project__header__right">
-                    <el-link
-                      class="project__header__link"
-                      :underline="false"
-                      type="primary"
-                      @click="open(child.path)"
-                      >打开目录</el-link
-                    >
+                    <Opener class="project__header__link" :path="child.path" is-folder> </Opener>
                   </div>
                 </div>
               </template>
 
-              <el-table :data="child.records" row-key="id" :show-header="false" :load="load" lazy>
-                <el-table-column label="名称" prop="name">
-                  <template #default="{ row }">
-                    <el-link
-                      :underline="false"
-                      :type="row.finished ? 'info' : 'warning'"
-                      :title="row.path"
-                      style="line-height: 1"
-                      @click="open(row.path)"
-                    >
-                      {{ row.name }}
-                    </el-link>
-                  </template>
-                </el-table-column>
-
-                <el-table-column label="操作" width="44px" align="right">
-                  <template #default="{ row }">
-                    <template v-if="row.isTopLevel || row.finished">
-                      <el-icon
-                        v-if="row.finished"
-                        color="#67c23a"
-                        class="handle-icon handle-icon--disabled"
-                      >
-                        <Finished />
-                      </el-icon>
-
-                      <el-icon v-else color="#409efc" class="handle-icon" @click="done(row)">
-                        <Select />
-                      </el-icon>
-                    </template>
-                  </template>
-                </el-table-column>
-              </el-table>
+              <Table :data="child.records" />
             </el-card>
           </div>
         </template>
@@ -141,6 +74,7 @@ const load: TableProps<ProjectItem>['load'] = async (item, _, resolve) => {
 
       &__link {
         margin-left: 20px;
+        font-size: 18px;
       }
     }
 
@@ -156,44 +90,6 @@ const load: TableProps<ProjectItem>['load'] = async (item, _, resolve) => {
         font-size: 14px;
         color: var(--el-text-color-placeholder);
       }
-
-      &__list {
-        &__item {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-top: 7px;
-        }
-      }
-    }
-
-    .handle-icon {
-      cursor: pointer;
-
-      &--disabled {
-        cursor: auto;
-      }
-    }
-
-    :deep(.el-table .cell) {
-      display: flex;
-      align-items: center;
-    }
-
-    :deep(.el-table .el-table__cell.is-right .cell) {
-      justify-content: flex-end;
-    }
-
-    :deep(.el-table tr) {
-      background-color: transparent;
-    }
-
-    :deep(.el-table--enable-row-hover .el-table__body tr:hover > td.el-table__cell) {
-      background-color: transparent;
-    }
-
-    :deep(.el-table td.el-table__cell div) {
-      padding: 0;
     }
   }
 }
