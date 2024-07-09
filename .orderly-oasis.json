@@ -1,0 +1,31 @@
+{
+  "appName": "orderly-oasis",
+  "archivesName": ".存档",
+  "websiteList": [
+    {
+      "name": "百度",
+      "links": [
+        {
+          "name": "官网",
+          "href": "https://baidu.com"
+        },
+        {
+          "name": "开发者",
+          "href": "https://kaifa.baidu.com"
+        }
+      ]
+    },
+    {
+      "name": "Google",
+      "links": "https://google.com"
+    }
+  ],
+  "projectList": [
+    {
+      "name": "演示待办需求",
+      "path": "E:\\Projects\\orderly-oasis\\.todo"
+    }
+  ],
+  "keySearch": "Ctrl + F",
+  "keyToggle": "Alt + W"
+}
