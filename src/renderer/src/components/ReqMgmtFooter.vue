@@ -30,6 +30,7 @@ const { y } = useScroll(containerRef, {
         v-model="currentProject"
         placeholder="切换项目"
         size="small"
+        value-key="name"
         style="min-width: 200px"
       >
         <el-option
