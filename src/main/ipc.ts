@@ -4,7 +4,7 @@ import { mkdir, readdir, rename, writeFile } from 'node:fs/promises'
 import { join } from 'path'
 import { v4 as uuid } from 'uuid'
 import { merge } from 'lodash'
-import { addPinyin, extractDate, getFileName } from '@common/index'
+import { addPinyin, extractDate } from '@common/index'
 
 export default (win: BrowserWindow) => {
   const appName = app.getName()
@@ -180,7 +180,8 @@ export default (win: BrowserWindow) => {
 
     await Promise.all(
       projectsDirs.map(async (dir) => {
-        let projectPath = join(reqDir, dir.name)
+        const projectPath = join(reqDir, dir.name)
+        const projectName = dir.name
 
         const projectChildren = await readdir(projectPath, { withFileTypes: true })
 
@@ -192,18 +193,9 @@ export default (win: BrowserWindow) => {
         // 待办需求
         const requirements = projectChildren.filter((el) => el.name !== settings['archivesName'])
 
-        // 根据是否有待办需求重命名文件夹，添加不同的前缀
-        const projectName = await renameProjectDir(
-          projectPath,
-          dir.name,
-          requirements.length ? 'A-' : 'Z-'
-        )
-
-        projectPath = join(reqDir, projectName)
-
         projects[projectName] = addPinyin<Project>({
           id: projectName,
-          name: getFileName(projectName),
+          name: projectName,
           path: projectPath,
           requirements: [],
           requirementsLen: 0,
@@ -250,17 +242,6 @@ export default (win: BrowserWindow) => {
     )
 
     return projects
-
-    async function renameProjectDir(oldPath: string, name: string, prefix: string) {
-      const newName = `${prefix}${getFileName(name)}`
-      const newPath = join(reqDir, newName)
-
-      if (oldPath === newPath) return newName
-
-      await rename(oldPath, newPath)
-
-      return newName
-    }
   }
 }
 

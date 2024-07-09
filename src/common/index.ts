@@ -1,13 +1,5 @@
 import { pinyin } from 'pinyin-pro'
 
-export function getFileName(name: string) {
-  const reg = /((Empty-)*[a-zA-Z]*-+)(?<name>.*)/i
-  const exec = reg.exec(name)
-  const newName = exec?.groups?.name
-
-  return newName ? newName : name
-}
-
 export function extractDate(input: string) {
   const datePattern = /(\d{4}[-/]?)(\d{1,2}[-/]?)(\d{1,2})/
 
