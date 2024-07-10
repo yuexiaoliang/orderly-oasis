@@ -13,24 +13,24 @@ const isMaximize = ref(false)
 
 // 关闭窗口
 const onClose = () => {
-  window.electron.ipcRenderer.send('close-win')
+  window.ipc.hideAppWindow()
 }
 
 // 最小化窗口
 const onMinimize = () => {
-  window.electron.ipcRenderer.send('minimize-win')
+  window.ipc.minimizeAppWindow()
 }
 
 // 最大化窗口
 const onMaximize = () => {
   isMaximize.value = true
-  window.electron.ipcRenderer.send('maximize-win')
+  window.ipc.maximizeAppWindow()
 }
 
 // 取消最大化窗口
 const onUnMaximize = () => {
   isMaximize.value = false
-  window.electron.ipcRenderer.send('unmaximize-win')
+  window.ipc.unmaximizeAppWindow()
 }
 
 const settingVisible = ref(false)

@@ -1,14 +1,33 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
+import * as settingsIpcHandles from '../main/ipc-handles/settings'
+import * as projectManagerIpc from '../main/ipc-handles/projectManager'
+import * as systemIpc from '../main/ipc-handles/system'
+import * as appIpc from '../main/ipc-handles/app'
+
+const ipcAPI = {}
+function handlesRegister(module: Record<string, any>) {
+  const keys = Object.keys(module)
+  keys.forEach((key) => {
+    ipcAPI[key] = (...args) => ipcRenderer.invoke(key, ...args)
+  })
+}
+handlesRegister(settingsIpcHandles)
+handlesRegister(projectManagerIpc)
+handlesRegister(systemIpc)
+handlesRegister(appIpc)
 
 if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('electron', electronAPI)
+
+    contextBridge.exposeInMainWorld('ipc', ipcAPI)
   } catch (error) {
     console.error(error)
   }
 } else {
   ;(window as any).electron = electronAPI
+  ;(window as any).ipc = ipcAPI
 }
 
 const { appendLoading, removeLoading } = useLoading()

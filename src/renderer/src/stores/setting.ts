@@ -11,11 +11,14 @@ export const useSettingStore = defineStore('setting', () => {
   })
 
   const getSettings = async () => {
-    settings.value = await window.electron.ipcRenderer.invoke('get-settings')
+    const { data } = await window.ipc.getSettings()
+    settings.value = data
   }
 
   const addProject = async () => {
-    const { filePaths } = await window.electron.ipcRenderer.invoke('open-dialog', {
+    const {
+      data: { filePaths }
+    } = await window.ipc.openDialog({
       properties: ['openDirectory'],
       title: '请选择要管理的目录',
       parsed: true
@@ -24,6 +27,8 @@ export const useSettingStore = defineStore('setting', () => {
 
     const [dir] = filePaths
 
+    if (typeof dir === 'string') return
+
     const { value: name } = await ElMessageBox.prompt('请输入项目名称', '项目名称', {
       confirmButtonText: '确认',
       cancelButtonText: '取消',
@@ -31,7 +36,7 @@ export const useSettingStore = defineStore('setting', () => {
     })
 
     try {
-      const { code, msg } = await window.electron.ipcRenderer.invoke('add-project', {
+      const { code, msg } = await window.ipc.addProject({
         name,
         path: dir.path
       })
@@ -48,7 +53,7 @@ export const useSettingStore = defineStore('setting', () => {
   const deleteProject = async (project: AppSettingProject) => {
     const { name } = project
     try {
-      const { code, msg } = await window.electron.ipcRenderer.invoke('delete-project', name)
+      const { code, msg } = await window.ipc.deleteProject(name)
 
       if (code !== 0) throw msg
 

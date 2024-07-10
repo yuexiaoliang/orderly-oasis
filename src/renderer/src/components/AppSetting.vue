@@ -10,7 +10,9 @@ const { settings } = storeToRefs(settingStore)
 const model = defineModel<boolean>()
 
 const selectSettingsFile = async () => {
-  const { filePaths } = await window.electron.ipcRenderer.invoke('open-dialog', {
+  const {
+    data: { filePaths }
+  } = await window.ipc.openDialog({
     title: '请选择设置文件',
     properties: ['openFile']
   })
@@ -18,8 +20,8 @@ const selectSettingsFile = async () => {
   const [path] = filePaths
   if (!path) return
 
-  const { code } = await window.electron.ipcRenderer.invoke('update-settings', {
-    settingsFile: path
+  const { code } = await window.ipc.updateSettings({
+    settingsFile: path as string
   })
   if (code !== 0) {
     return
@@ -56,8 +58,3 @@ const selectSettingsFile = async () => {
     </el-form>
   </el-dialog>
 </template>
-
-<style lang="scss" scoped>
-.app-setting {
-}
-</style>

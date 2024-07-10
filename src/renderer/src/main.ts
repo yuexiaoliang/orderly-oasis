@@ -10,6 +10,10 @@ import './variables.css'
 import './base.scss'
 import { useSettingStore } from '@/stores/setting'
 
+Object.keys(window.ipc).forEach((funcName) => {
+  window.ipc[funcName] = codeInterceptor(window.ipc[funcName])
+})
+
 mounter()
 async function mounter() {
   const app = createApp(App)
@@ -23,4 +27,21 @@ async function mounter() {
   app.mount('#app').$nextTick(() => {
     postMessage({ payload: 'removeLoading' }, '*')
   })
+}
+
+function codeInterceptor(originalFunction) {
+  return async function (...args) {
+    try {
+      const result = await originalFunction(...args)
+
+      if (result?.code !== 0) {
+        throw result?.msg
+      }
+
+      return result
+    } catch (error) {
+      ElMessage.error(error?.toString())
+      throw error
+    }
+  }
 }

@@ -124,10 +124,8 @@ export const useReqMgmtStore = defineStore('ReqMgmt', () => {
     if (!currentProject.value?.path) {
       allProjects.value = {}
     } else {
-      allProjects.value = await window.electron.ipcRenderer.invoke(
-        'readdir',
-        currentProject.value.path
-      )
+      const { data } = await window.ipc.getProject(currentProject.value.path)
+      allProjects.value = data
     }
     reading.value = false
   }
@@ -170,7 +168,7 @@ export const useReqMgmtStore = defineStore('ReqMgmt', () => {
     })
 
     try {
-      const { code, msg } = await window.electron.ipcRenderer.invoke('archive-data', { ...item })
+      const { code, msg } = await window.ipc.archiveProjectData({ ...item })
 
       if (code !== 0) throw msg
 

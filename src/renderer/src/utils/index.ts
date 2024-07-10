@@ -4,7 +4,7 @@ export { bus }
 
 // 打开文件或文件夹
 export function open(path: string) {
-  window.electron.ipcRenderer.send('open', path)
+  window.ipc.openPath(path)
 }
 
 export function selectFilter(val: string, list: any[]) {

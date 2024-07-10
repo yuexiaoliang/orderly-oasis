@@ -13,7 +13,7 @@ const reqMgmtStore = useReqMgmtStore()
 const { done } = reqMgmtStore
 
 const load: TableProps<ProjectItem>['load'] = async (item, _, resolve) => {
-  const _children = await window.electron.ipcRenderer.invoke('readdir-children', item.path)
+  const { data: _children } = await window.ipc.getProjectItemChildren(item.path)
 
   const children = _children.map((child) => {
     return {
