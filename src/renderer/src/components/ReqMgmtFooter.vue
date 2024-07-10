@@ -7,6 +7,7 @@ import { useScroll } from '@vueuse/core'
 import { injectionKeys } from '@/constants'
 import { useReqMgmtStore } from '@/stores/req-mgmt'
 import WebsiteOpener from '@/components/WebsiteOpener.vue'
+import ProjectManager from './ReqMgmtProjectManager.vue'
 import { useSettingStore } from '@/stores/setting'
 
 const settingStore = useSettingStore()
@@ -16,7 +17,7 @@ const { containerRef } = inject(injectionKeys.reqMgmtKey) as injectionKeys.ReqMg
 
 const reqMgmtStore = useReqMgmtStore()
 const { refresh } = reqMgmtStore
-const { reading, currentProject } = storeToRefs(reqMgmtStore)
+const { reading } = storeToRefs(reqMgmtStore)
 
 const { y } = useScroll(containerRef, {
   behavior: 'smooth'
@@ -26,20 +27,7 @@ const { y } = useScroll(containerRef, {
 <template>
   <footer class="req-mgmt-footer">
     <el-space :size="15">
-      <el-select
-        v-model="currentProject"
-        placeholder="切换项目"
-        size="small"
-        value-key="name"
-        style="min-width: 200px"
-      >
-        <el-option
-          v-for="item in settings.projectList"
-          :key="item.name"
-          :label="item.name"
-          :value="item"
-        />
-      </el-select>
+      <ProjectManager />
 
       <WebsiteOpener />
 

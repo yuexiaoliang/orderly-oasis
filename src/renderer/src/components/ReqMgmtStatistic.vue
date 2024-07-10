@@ -124,7 +124,8 @@ const handleHeatmapChartClick = (e: ECElementEvent) => {
     <ChartHeatmapCartesian
       :options="heatmapChartOptions"
       :style="{
-        height: chartHeatmapCartesianHeight
+        height: chartHeatmapCartesianHeight,
+        'min-height': '90px'
       }"
       @click="handleHeatmapChartClick"
     />

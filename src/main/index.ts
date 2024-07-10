@@ -49,7 +49,9 @@ function createWindow(): void {
   // Load the remote URL for development or the local html file for production.
   if (is.dev && url) {
     win.loadURL(url)
-    win.webContents.openDevTools()
+    win.webContents.openDevTools({
+      mode: 'right'
+    })
   } else {
     win.loadFile(indexHtml)
   }

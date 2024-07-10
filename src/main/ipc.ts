@@ -1,7 +1,7 @@
 import { BrowserWindow, app, ipcMain, shell, dialog, OpenDialogSyncOptions } from 'electron'
 import { Dirent, existsSync, readFileSync, writeFileSync } from 'fs'
 import { mkdir, readdir, rename, writeFile } from 'node:fs/promises'
-import { join } from 'path'
+import { join, parse } from 'path'
 import { v4 as uuid } from 'uuid'
 import { merge } from 'lodash'
 import { addPinyin, extractDate } from '@common/index'
@@ -30,8 +30,21 @@ export default (win: BrowserWindow) => {
     win?.unmaximize()
   })
 
-  ipcMain.handle('open-dialog', async (_, options: OpenDialogSyncOptions) => {
-    return await dialog.showOpenDialog(win, options)
+  ipcMain.handle('open-dialog', async (_, options: OpenDialogSyncOptions & { parsed: boolean }) => {
+    const res = await dialog.showOpenDialog(win, options)
+    if (!options.parsed) return res
+
+    const { filePaths, ...rest } = res
+
+    return {
+      ...rest,
+      filePaths: filePaths.map((path) => {
+        return {
+          ...parse(path),
+          path
+        }
+      })
+    }
   })
 
   ipcMain.handle('get-settings', () => {
@@ -73,6 +86,59 @@ export default (win: BrowserWindow) => {
     return {
       code: 0,
       msg: '存档成功'
+    }
+  })
+
+  ipcMain.handle('delete-project', async (_, name: AppSettingProject['name']) => {
+    const { projectList } = settings
+    const index = projectList.findIndex((item) => item.name === name)
+
+    if (index === -1) {
+      return {
+        code: 1,
+        msg: '存档目录不存在'
+      }
+    }
+
+    projectList.splice(index, 1)
+
+    await updateSettings({
+      projectList
+    })
+
+    return {
+      code: 0,
+      msg: '删除成功'
+    }
+  })
+
+  ipcMain.handle('add-project', async (_, project: AppSettingProject) => {
+    const { projectList } = settings
+    const checkName = projectList.some((item) => item.name === project.name)
+    if (checkName) {
+      return {
+        code: 1,
+        msg: '项目名称重复'
+      }
+    }
+    const checkPath = projectList.find((item) => item.path === project.path)
+
+    if (checkPath) {
+      return {
+        code: 1,
+        msg: `项目路径和 [${checkPath.name}] 重复`
+      }
+    }
+
+    projectList.push(project)
+
+    await updateSettings({
+      projectList
+    })
+
+    return {
+      code: 0,
+      msg: '添加成功'
     }
   })
 

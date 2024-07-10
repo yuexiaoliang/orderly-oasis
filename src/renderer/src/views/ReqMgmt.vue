@@ -7,6 +7,11 @@ import ReqMgmtFooter from '@/components/ReqMgmtFooter.vue'
 import ReqMgmtList from '@/components/ReqMgmtList.vue'
 import ReqMgmtSide from '@/components/ReqMgmtSide.vue'
 import ReqMgmtCtrlf from '@/components/ReqMgmtCtrlf.vue'
+import Add from '@/components/ReqMgmtProjectManagerAdd.vue'
+
+import { useReqMgmtStore } from '@/stores/req-mgmt'
+
+const reqMgmtStore = useReqMgmtStore()
 
 const containerRef = ref()
 provide(injectionKeys.reqMgmtKey, {
@@ -19,12 +24,17 @@ provide(injectionKeys.reqMgmtKey, {
     <el-container style="height: calc(100% - var(--footer-height))">
       <el-main class="req-mgmt-main">
         <div ref="containerRef" class="req-mgmt-main-container scrollbar">
-          <ReqMgmtStatistic />
-          <ReqMgmtList />
+          <template v-if="reqMgmtStore.projectList?.length">
+            <ReqMgmtStatistic />
+            <ReqMgmtList />
+          </template>
+          <el-empty v-else style="margin-top: 50px" description="资源为空">
+            <Add />
+          </el-empty>
         </div>
       </el-main>
 
-      <el-aside width="240">
+      <el-aside width="200px">
         <ReqMgmtSide />
       </el-aside>
     </el-container>

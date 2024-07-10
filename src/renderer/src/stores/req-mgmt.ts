@@ -10,11 +10,22 @@ export const useReqMgmtStore = defineStore('ReqMgmt', () => {
   const settingStore = useSettingStore()
   const { settings } = storeToRefs(settingStore)
 
-  const currentProject = useStorage('currentProject', settings.value.projectList[0])
+  const currentProject = useStorage('currentProject', settings.value.projectList?.[0])
   watch(
     () => settings.value.projectList,
-    () => {
-      currentProject.value = settings.value.projectList[0]
+    (list) => {
+      if (currentProject.value) {
+        const { name, path } = currentProject.value
+        const isExist =
+          list.length &&
+          list.some((item) => {
+            return item.name === name && item.path === path
+          })
+
+        if (isExist) return
+      }
+
+      currentProject.value = list?.[0]
     },
     {
       immediate: true,
@@ -110,10 +121,14 @@ export const useReqMgmtStore = defineStore('ReqMgmt', () => {
   const read = async () => {
     reading.value = true
 
-    allProjects.value = await window.electron.ipcRenderer.invoke(
-      'readdir',
-      currentProject.value.path
-    )
+    if (!currentProject.value?.path) {
+      allProjects.value = {}
+    } else {
+      allProjects.value = await window.electron.ipcRenderer.invoke(
+        'readdir',
+        currentProject.value.path
+      )
+    }
     reading.value = false
   }
   watch(
