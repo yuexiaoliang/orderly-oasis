@@ -44,7 +44,7 @@ const { currentProject } = storeToRefs(reqMgmtStore)
     </el-option>
 
     <template #empty>
-      <el-empty description="请添加项目" image-size="60px" style="padding: 20px 0"></el-empty>
+      <el-empty description="请添加项目" :image-size="60" style="padding: 20px 0"></el-empty>
     </template>
 
     <template #footer>
