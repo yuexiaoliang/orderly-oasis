@@ -169,19 +169,19 @@ export const useReqMgmtStore = defineStore('ReqMgmt', () => {
       type: 'warning'
     })
 
-    const { code, msg } = await window.electron.ipcRenderer.invoke('archive-data', { ...item })
+    try {
+      const { code, msg } = await window.electron.ipcRenderer.invoke('archive-data', { ...item })
 
-    if (code === 1) {
+      if (code !== 0) throw msg
+
+      read()
+    } catch (error) {
       ElMessage({
         type: 'error',
-        message: msg,
+        message: error!.toString(),
         offset: 70
       })
-
-      return
     }
-
-    read()
   }
 
   return {
