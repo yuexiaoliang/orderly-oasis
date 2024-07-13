@@ -174,6 +174,7 @@ export const useReqMgmtStore = defineStore('ReqMgmt', () => {
 
       read()
     } catch (error) {
+      console.log(`🚀 > done > error:`, error)
       ElMessage({
         type: 'error',
         message: error!.toString(),

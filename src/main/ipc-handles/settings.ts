@@ -1,5 +1,5 @@
 import { app } from 'electron'
-import { existsSync, readFileSync, writeFileSync } from 'fs'
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs'
 import { writeFile } from 'node:fs/promises'
 import { join } from 'path'
 import { merge } from 'lodash'
@@ -8,7 +8,7 @@ const appName = app?.getName()
 const homePath = app?.getPath('home')
 const appDataPath = app?.getPath('appData')
 
-async function updateAppData(data: AppData) {
+export async function updateAppData(data: AppData) {
   const appDataFile = join(appDataPath, `.${appName}`)
 
   const appData = getAppData()
@@ -16,7 +16,17 @@ async function updateAppData(data: AppData) {
   await writeFile(appDataFile, JSON.stringify(merge(appData, data)), 'utf-8')
 }
 
-function getAppData() {
+export function getAppDataFile() {
+  return join(appDataPath, `.${appName}`)
+}
+
+export function getAppCacheDir() {
+  const dir = join(appDataPath, `.${appName}-cache`)
+  if (!existsSync(dir)) mkdirSync(dir)
+  return dir
+}
+
+export function getAppData() {
   const appDataFile = join(appDataPath, `.${appName}`)
 
   let appData: AppData = {

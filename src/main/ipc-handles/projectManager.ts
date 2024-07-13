@@ -1,9 +1,15 @@
 import { Dirent, existsSync } from 'node:fs'
 import { mkdir, readdir, rename } from 'node:fs/promises'
-import { join } from 'node:path'
+import { join, parse } from 'node:path'
 import { v4 as uuid } from 'uuid'
-import { getSettings, updateSettings } from './settings'
+import { get as _get } from 'lodash'
 import { addPinyin, extractDate } from '@common/index'
+import { getSettings, updateSettings } from './settings'
+import wait from 'wait'
+import { createCacheDB } from '../cache'
+import { pathToSegments } from '../utils'
+
+export type __Dirent = Pick<Dirent, 'isFile' | 'isDirectory' | 'name' | 'path' | 'parentPath'>
 
 export async function archiveProjectData(item: ProjectItem) {
   const { data: settings } = getSettings()
@@ -25,6 +31,11 @@ export async function archiveProjectData(item: ProjectItem) {
   }
 
   await rename(path, newPath)
+
+  // 当文件存档完成以后，App cache 会异步的处理新的目录结构
+  // 这时候如果直接重新获取数据的话，因为 App cache 还未完成，
+  // 所以这里需要稍微等待，以后需要优化掉
+  await wait(100)
 
   return {
     code: 0,
@@ -61,24 +72,27 @@ export async function getProject(reqDir: string) {
     throw new Error(`${reqDir} not found`)
   }
 
+  const cacheDB = createCacheDB()
+  const _database = _get(await cacheDB.get(), pathToSegments(reqDir))
+
   const { data: settings } = getSettings()
   const projects: AllProjects = {}
 
-  const projectsDirs = (await readdir(reqDir, { withFileTypes: true })).filter((e) =>
-    e.isDirectory()
-  )
+  const projectsDirs = Object.keys(_database).filter((dir) => !!_database[dir])
 
   await Promise.all(
     projectsDirs.map(async (dir) => {
-      const projectPath = join(reqDir, dir.name)
-      const projectName = dir.name
+      const { name: projectName } = parse(dir)
+      const projectPath = dir
 
-      const projectChildren = await readdir(projectPath, { withFileTypes: true })
+      const projectChildren = Object.keys(_database[dir]).map((p) =>
+        pathToDirent(p, !!_database[dir][p])
+      )
 
       // 是否有存档
-      const hasArchives = projectChildren
-        .find((el) => el.name === settings['archivesName'])
-        ?.isDirectory()
+      const archive = projectChildren.find((el) => el.name === settings['archivesName'])
+      const hasArchives = archive?.isDirectory()
+      const archivesPath = archive?.path
 
       // 待办需求
       const requirements = projectChildren.filter((el) => el.name !== settings['archivesName'])
@@ -108,23 +122,24 @@ export async function getProject(reqDir: string) {
       }
 
       // 存档
-      if (hasArchives) {
-        const archivePath = join(projectPath, settings['archivesName'])
+      if (hasArchives && archivesPath) {
+        const items = Object.keys(_database[dir][archivesPath]).map((p) => {
+          const item = pathToDirent(p, !!_database[dir][archivesPath][p])
+          const result = fileToItem(item, archivesPath)
 
-        const { data: items } = await getProjectItemChildren(archivePath, (item) => {
           return {
-            ...item,
+            ...result,
             parent: project,
             isTopLevel: true,
             finished: true
           }
         })
-        const len = items.length
 
+        const len = items.length
         project.archives = items
         project.archivesLen = len
         project.hasArchives = len > 0
-        project.archivesPath = archivePath
+        project.archivesPath = archivesPath
       }
 
       project.records = project.requirements.concat(project.archives)
@@ -193,7 +208,7 @@ export async function addProject(project: AppSettingProject) {
   }
 }
 
-function fileToItem(file: Dirent, parentPath: string, isTopLevel: boolean = false): ProjectItem {
+function fileToItem(file: __Dirent, parentPath: string, isTopLevel: boolean = false): ProjectItem {
   const isDir = file.isDirectory()
   return {
     id: uuid(),
@@ -209,9 +224,25 @@ function fileToItem(file: Dirent, parentPath: string, isTopLevel: boolean = fals
 }
 
 function filesToItems(
-  files: Dirent[],
+  files: __Dirent[],
   parentPath: string,
   isTopLevel: boolean = false
 ): ProjectItem[] {
   return files.map((file) => fileToItem(file, parentPath, isTopLevel))
+}
+
+function pathToDirent(path: string, isDir: boolean): __Dirent {
+  const { dir, base } = parse(path)
+
+  return {
+    name: base,
+    path,
+    parentPath: dir,
+    isFile() {
+      return !isDir
+    },
+    isDirectory() {
+      return isDir
+    }
+  }
 }

@@ -1,10 +1,18 @@
 import { Menu, Tray, globalShortcut, app, shell, BrowserWindow } from 'electron'
-import { release } from 'node:os'
+import { release, platform } from 'node:os'
 import { join } from 'node:path'
+import stdcp from 'stdcp'
 import { optimizer, is } from '@electron-toolkit/utils'
 import registerIpc from './ipc'
-
+import './watcher'
 import icon from '@resources/icon.png?asset'
+
+if (is.dev) {
+  // 解决控制台打印中文乱码
+  stdcp.setSync(65001)
+
+  clearConsole()
+}
 
 if (release().startsWith('6.1')) app.disableHardwareAcceleration()
 
@@ -135,3 +143,11 @@ app.on('activate', () => {
     createWindow()
   }
 })
+
+function clearConsole() {
+  if (platform() === 'win32') {
+    process.stdout.write('\x1Bc')
+  } else {
+    process.stdout.write('\x1B[2J\x1B[3J\x1B[H')
+  }
+}

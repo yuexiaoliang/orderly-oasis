@@ -9,11 +9,12 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "cSpell.words": [
-    "typecheck",
     "autoresize",
     "ctrlf",
     "cubemove",
     "Mgmt",
-    "treemap"
+    "stdcp",
+    "treemap",
+    "typecheck"
   ]
 }
