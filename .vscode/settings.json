@@ -8,13 +8,5 @@
   "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "cSpell.words": [
-    "autoresize",
-    "ctrlf",
-    "cubemove",
-    "Mgmt",
-    "stdcp",
-    "treemap",
-    "typecheck"
-  ]
+  "cSpell.words": ["autoresize", "ctrlf", "cubemove", "Mgmt", "stdcp", "treemap", "typecheck"]
 }

@@ -6,7 +6,7 @@
 
 ## 使用
 
-``` bash
+```bash
 pnpm install
 
 pnpm build # or pnpm dev
@@ -17,7 +17,6 @@ pnpm build # or pnpm dev
 1. 一键归档功能
 
 <img src="./.readme/一键归档.gif" width="100%" />
-
 
 2. 按照时间归档的热力图统计
 
